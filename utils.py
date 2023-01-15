@@ -110,7 +110,7 @@ class ngsimDataset(Dataset):
         '''Initialize neighbors and neighbors length batches:'''
         nbr_batch_size = 0
         for _,_,nbrs,_,_ in samples: 
-            nbr_batch_size += sum([len(nbrs[i])!=0 for i in range(len(nbrs))]) # 很多个ego的周围车数量和
+            nbr_batch_size += sum([len(nbrs[i])!=0 for i in range(len(nbrs))]) # 第i辆ego车的周围车辆数len(nbrs[i]，很多个ego的周围车数总和
         maxlen = self.t_h//self.d_s + 1  # 31
         nbrHist_batch = torch.zeros(maxlen,nbr_batch_size,2)  # dim: [31,nbr_batch_size,2]
 
