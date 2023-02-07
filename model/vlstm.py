@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-#vanilla lstm不含conv social pooling和social pooling
+#vanilla lstm不含conv social pooling和social pooling 没改呢
 
 # Custom activation for output layer (Graves, 2015) # decode输出output用
 def outputActivation(x): #x是future_pred 三维tensor

@@ -20,10 +20,10 @@ def maskedNLL(y_pred, y_gt, mask):
     # avoid_infinitive = 1e-6
     # ohr = torch.from_numpy(1/np.maximum(1 - rho * rho, avoid_infinitive)) #avoid infinite values, ohr=1/((ρ^2)^0.5)
     ohr = torch.pow((1-torch.pow(rho,2)),-1)  #1/(1-ρ2)
-    out = 0.5*ohr * (
+    out =0.093( 0.5*ohr * (
         torch.pow(x-muX,2)/ torch.pow(sigX,2) + torch.pow(y-muY,2)/ torch.pow(sigY,2) -
         2 * rho *(x-muX)* (y-muY) / (sigX * sigY)
-            ) + torch.log(sigX * sigY) - 0.5*torch.log(torch,pow(ohr,-1)) + math.log(math.pi*2)
+            ) + torch.log(sigX * sigY) - 0.5*torch.log(torch,pow(ohr,-1)) + math.log(math.pi*2)) 
 
     acc[:,:,0] = out #??
     acc[:,:,1] = out
@@ -33,7 +33,7 @@ def maskedNLL(y_pred, y_gt, mask):
 
 
 ## valid用的NLL：## NLL for sequence, outputs sequence of NLL values for each time-step, uses mask for variable output lengths, used for evaluation
-def maskedNLLTest(fut_pred, lat_pred, lon_pred, fut, op_mask, num_lat_classes=3, num_lon_classes = 2,use_maneuvers = True, avg_along_time = False):
+def maskedNLLTest(fut_pred, lat_pred, lon_pred, fut, op_mask, num_lat_classes=3, num_lon_classes = 2,use_maneuvers = False, avg_along_time = False):
     if use_maneuvers:
         acc = torch.zeros(op_mask.shape[0],op_mask.shape[1],num_lon_classes*num_lat_classes).cuda()
         count = 0
@@ -53,10 +53,10 @@ def maskedNLLTest(fut_pred, lat_pred, lon_pred, fut, op_mask, num_lat_classes=3,
                 y = y_gt[:, :, 1]
 
                 ohr = torch.pow((1-torch.pow(rho,2)),-1) 
-                out = 0.5*ohr * (
+                out =0.093( 0.5*ohr * (
                     torch.pow(x-muX,2)/ torch.pow(sigX,2) + torch.pow(y-muY,2)/ torch.pow(sigY,2) -
                     2 * rho *(x-muX)* (y-muY) / (sigX * sigY)
-                        ) + torch.log(sigX * sigY) - 0.5*torch.log(torch,pow(ohr,-1)) + math.log(math.pi*2)
+                        ) + torch.log(sigX * sigY) - 0.5*torch.log(torch,pow(ohr,-1)) + math.log(math.pi*2))
 
 
                 #行为的准确度
@@ -89,11 +89,11 @@ def maskedNLLTest(fut_pred, lat_pred, lon_pred, fut, op_mask, num_lat_classes=3,
 
         # correct hsy改12.8
         ohr = torch.pow((1-torch.pow(rho,2)),-1) 
-        out = 0.5*ohr * (
+        out =0.093*( 0.5*ohr * (
                 torch.pow(x-muX,2)/ torch.pow(sigX,2) + torch.pow(y-muY,2)/ torch.pow(sigY,2) -
                 2 * rho *(x-muX)* (y-muY) / (sigX * sigY)
-                    ) + torch.log(sigX * sigY) - 0.5*torch.log(torch,pow(ohr,-1)) + math.log(math.pi*2)
-             #单位是ft^2
+                    ) + torch.log(sigX * sigY) - 0.5*torch.log(torch,pow(ohr,-1)) + math.log(math.pi*2))
+             #单位是m^2
 
 
         acc[:, :, 0] = out
@@ -106,18 +106,18 @@ def maskedNLLTest(fut_pred, lat_pred, lon_pred, fut, op_mask, num_lat_classes=3,
             counts = torch.sum(op_mask[:, :, 0], dim=1)
             return lossVal,counts
 
-## train用的MSE： Batchwise MSE loss, uses mask for variable output lengths
+## train用的RMSE： Batchwise MSE loss, uses mask for variable output lengths
 def maskedMSE(y_pred, y_gt, mask):
     acc = torch.zeros_like(mask)
     muX = y_pred[:,:,0]
     muY = y_pred[:,:,1]
     x = y_gt[:,:, 0]
     y = y_gt[:,:, 1]
-    out = torch.pow(x-muX, 2) + torch.pow(y-muY, 2)
+    out = 0.3048*torch.pow((torch.pow(x-muX, 2) + torch.pow(y-muY, 2)),0.5)
     acc[:,:,0] = out
     acc[:,:,1] = out
     acc = acc*mask
-    lossVal = torch.sum(acc)/torch.sum(mask) #单位是ft
+    lossVal = torch.sum(acc)/torch.sum(mask) #单位是m
     return lossVal
 
 ## test/valid用的MSE loss for complete sequence, outputs a sequence of MSE values, uses mask for variable output lengths, used for evaluation
@@ -127,7 +127,7 @@ def maskedMSETest(y_pred, y_gt, mask):
     muY = y_pred[:, :, 1]
     x = y_gt[:, :, 0]
     y = y_gt[:, :, 1]
-    out = torch.pow(x - muX, 2) + torch.pow(y - muY, 2)
+    out = 0.3048*torch.pow((torch.pow(x-muX, 2) + torch.pow(y-muY, 2)),0.5)
     acc[:, :, 0] = out
     acc[:, :, 1] = out
     acc = acc * mask

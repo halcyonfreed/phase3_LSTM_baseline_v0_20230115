@@ -13,7 +13,7 @@ import scipy.io as scp #读mat文件
 args={
     't_h':30, # length of track history
     't_f':50,# length of predicted trajectory
-    # d_s可改,先改成1
+    # d_s可改,先改成2
     'd_s':1,# down sampling rate of all sequences 采样的步长，原来是2,减少计算量，改成1?  https://blog.csdn.net/hxxjxw/article/details/106175155
     'enc_size':64,  # size of encoder LSTM
     'grid_size':(13,3) # size of social context grid 3根车道 前后6车，一共约13辆车的车长
@@ -55,6 +55,10 @@ class ngsimDataset(Dataset):
         #  self.D[idx,7]=1.0或者2.0, 默认是float所以要int()，np.eye默认是float所以astype(int)
         egoLonEnc=np.eye(2)[int(self.D[idx,7])-1].astype(int) # normal [1,0] brake [0,1]
         egoLatEnc=np.eye(3)[int(self.D[idx,6])-1].astype(int) # keep[1,0,0] left[0,1,0] right[0,0,1]
+        # egoLonEnc = np.zeros([2]) # 刹车和非刹车 初始化[0,0]
+        # egoLonEnc[int(self.D[idx, 7] - 1)] = 1 # normal是[1,0] brake是
+        # egoLatEnc = np.zeros([3]) #保持 左右变道 所以是3 [1,0,0] [0,1,0] [0,0,1]
+        # egoLatEnc[int(self.D[idx, 6] - 1)] = 1
         return egoHist,egoFut,nbrsHist,egoLatEnc,egoLonEnc
 
     def getHistory(self,nbrId,t,egoId,dsId): 
@@ -77,7 +81,7 @@ class ngsimDataset(Dataset):
                  return np.empty([0,2])
             else:
                 start=np.maximum(0, np.argwhere(nbrTrack[:, 0] == t).item() - self.t_h)
-                end=np.argwhere(egoTrack[:, 0] == t).item() + 1 # +1因为[1:3]是1,2没3
+                end=np.argwhere(nbrTrack[:, 0] == t).item() + 1 # +1因为[1:3]是1,2没3
                 egoHist=nbrTrack[start:end:self.d_s,1:3]-egoPos # 相对自车当前时刻的相对坐标！！！
 
             if len(egoHist)<self.t_h//self.d_s +1: #历史太短了扔掉
