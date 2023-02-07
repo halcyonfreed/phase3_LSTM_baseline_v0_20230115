@@ -1,4 +1,4 @@
-import torch
+1.15：
 import math
 import numpy as np
 # 看https://github.com/nachiket92/conv-social-pooling/issues/7 源代码是错的
